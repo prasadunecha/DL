@@ -34,7 +34,7 @@ model.compile(optimizer= sgd, loss = 'sparse_categorical_crossentropy', metrics 
 model.summary()
   
 #c. Training the model
-r = model.fit(x_train, y_train, validation_split=0.2, epochs = 11, batch_size = 64
+r = model.fit(x_train, y_train, validation_split=0.2, epochs = 11, batch_size = 64)
 x_test = test.drop(['label'], axis = 1).values
 y_test = test['label'].values
 x_test.shape
