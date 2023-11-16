@@ -1,4 +1,4 @@
-2 and 13
+
 
 #a. Loading and preprocessing the image data
 import pandas as pd
