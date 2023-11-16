@@ -33,7 +33,7 @@ model.summary()
 
 #d. Train the model using SGD with 11 epochs
 history = model.fit(x_train, y_train, epochs=11, batch_size=32, validation_split=0.2)
-r = model.fit(x_train, y_train, validation_split= 0.2, batch_size = 128, epochs 
+r = model.fit(x_train, y_train, validation_split= 0.2, batch_size = 128, epochs=11) 
 x_test = test.drop(['label'], axis = 1).values
 y_test = test['label'].values
 x_test = x_test.astype('float32') / 255
