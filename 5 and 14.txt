@@ -1,0 +1,47 @@
+5 and 14
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import tensorflow as tf
+from tensorflow.keras.layers import BatchNormalization, MaxPooling2D, Conv2D, Dense, Dropout, Flatten
+from tensorflow.keras.models import Model, Sequential
+from tensorflow.keras.optimizers import SGD
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import confusion_matrix, classification_report
+df = pd.read_csv("D:\Deep_Learning_code\LP-IV-datasets\ECGdataset\ecg_autoencoder_dataset.csv", header = None)
+df
+X = df.drop([140], axis = 1)
+y = df[140]
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+scaler = StandardScaler()
+X_train =  scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+encoder = Sequential([Dense(64, activation = 'relu', input_shape = (X_train.shape[1],))])
+decoder = Sequential([Dense(X_train.shape[1], activation = 'sigmoid')])
+autoencoder = Sequential([encoder, decoder])
+autoencoder.compile(optimizer = 'adam', loss = 'mean_squared_error', metrics = ['accuracy'])
+r = autoencoder.fit(X_train, X_train, epochs = 100, batch_size = 64, validation_data= (X_test, X_test))
+r.history.keys()
+plt.plot(r.history['loss'], label = 'loss', color = 'blue')
+plt.plot(r.history['val_loss'], label = 'val_loss', color = 'green')
+plt.legend
+plt.xlabel('epoch')
+plt.ylabel('loss')
+plt.plot(r.history['accuracy'], label = 'acc', color = 'red')
+plt.plot(r.history['val_accuracy'], label = 'val_acc', color = 'green')
+plt.legend
+loss = autoencoder.evaluate(X_test, X_test)
+print(f'Test Loss: {loss}')
+decoded_data = autoencoder.predict(X_test)
+mse = np.mean(np.power(X_test - decoded_data, 2), axis = 1)
+threshold = np.percentile(mse, 95)
+outliers = mse> threshold
+print("Confusion Matrix:\n", confusion_matrix(y_test, outliers))
+print("Classification report:\n", classification_report(y_test, outliers))
+
+num_outliers = np.sum(outliers)
+num_anomalies = np.sum(y_test[outliers] == 1)
+print(f'Number of outliers: {num_outliers}')
+print(f'Number of anomalies: {num_anomalies}')

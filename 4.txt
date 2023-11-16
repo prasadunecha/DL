@@ -1,0 +1,116 @@
+4
+
+#a. Import the necessary packages
+
+import tensorflow as tf
+
+# Display the version
+print(tf.__version__)
+# other imports
+import numpy as np
+import matplotlib.pyplot as plt
+from tensorflow.keras.layers import Input, Conv2D, Dense, Flatten, Dropout
+from tensorflow.keras.layers import GlobalMaxPooling2D, MaxPooling2D
+from tensorflow.keras.layers import BatchNormalization
+from tensorflow.keras.models import Model
+
+#b. Load the training and testing data
+# Load in the data
+cifar10 = tf.keras.datasets.cifar10
+# Distribute it to train and test set
+(x_train, y_train), (x_test, y_test) = cifar10.load_data()
+print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
+
+# Reduce pixel values
+x_train, x_test = x_train / 255.0, x_test / 255.0
+
+# flatten the label values
+y_train, y_test = y_train.flatten(), y_test.flatten()
+
+     
+
+# visualize data by plotting images
+fig, ax = plt.subplots(5, 5)
+k = 0
+
+for i in range(5):
+	for j in range(5):
+		ax[i][j].imshow(x_train[k], aspect='auto')
+		k += 1
+
+plt.show()
+
+#c. Define the network architecture using Keras
+# number of classes
+K = len(set(y_train))
+# calculate total number of classes
+# for output layer
+print("number of classes:", K)
+# Build the model using the functional API
+# input layer
+i = Input(shape=x_train[0].shape)
+x = Conv2D(32, (3, 3), activation='relu', padding='same')(i)
+x = BatchNormalization()(x)
+x = Conv2D(32, (3, 3), activation='relu', padding='same')(x)
+x = BatchNormalization()(x)
+x = MaxPooling2D((2, 2))(x)
+x = Conv2D(64, (3, 3), activation='relu', padding='same')(x)
+x = BatchNormalization()(x)
+x = Conv2D(64, (3, 3), activation='relu', padding='same')(x)
+x = BatchNormalization()(x)
+x = MaxPooling2D((2, 2))(x)
+x = Conv2D(128, (3, 3), activation='relu', padding='same')(x)
+x = BatchNormalization()(x)
+x = Conv2D(128, (3, 3), activation='relu', padding='same')(x)
+x = BatchNormalization()(x)
+x = MaxPooling2D((2, 2))(x)
+x = Flatten()(x)
+x = Dropout(0.2)(x)
+# Hidden layer
+x = Dense(1024, activation='relu')(x)
+x = Dropout(0.2)(x)
+# last hidden layer i.e.. output layer
+x = Dense(K, activation='softmax')(x)
+model = Model(i, x)
+# model description
+model.summary()
+from tensorflow.keras.optimizers import SGD
+sgd = SGD(learning_rate=0.1, momentum=0.9, nesterov=True)
+# Compile
+model.compile(optimizer=sgd,
+              loss='sparse_categorical_crossentropy',
+              metrics=['accuracy'])
+
+#d. Train the model using SGD/Adam optimizer
+# Fit
+history = model.fit(
+x_train, y_train, validation_data=(x_test, y_test), epochs=50)
+
+#e. Evaluate the network
+test_loss, test_acc = model.evaluate(x_test, y_test)
+print("Test Loss: {}, Test Accuracy: {}".format(test_loss, test_acc))
+
+#f. Plot the training loss and accuracy
+# Plot accuracy per iteration
+plt.plot(history.history['accuracy'], label='acc', color='red')
+plt.plot(history.history['val_accuracy'], label='val_acc', color='green')
+plt.legend()
+# list all data in history
+print(history.history.keys())
+# summarize history for accuracy
+plt.plot(history.history['accuracy'])
+# plt.plot(history.history['val_accuracy'])
+plt.title('model accuracy')
+plt.ylabel('accuracy')
+plt.xlabel('epoch')
+plt.legend(['train', 'test'], loc='upper left')
+plt.show()
+
+# summarize history for loss
+plt.plot(history.history['loss'])
+# plt.plot(history.history['val_loss'])
+plt.title('model loss')
+plt.ylabel('loss')
+plt.xlabel('epoch')
+plt.legend(['train', 'test'], loc='upper left')
+plt.show()

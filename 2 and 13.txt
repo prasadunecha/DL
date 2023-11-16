@@ -1,0 +1,57 @@
+2 and 13
+
+#a. Loading and preprocessing the image data
+import pandas as pd
+import numpy as  np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import tensorflow as tf
+from tensorflow.keras.layers import BatchNormalization, Conv2D, Dense, Dropout, MaxPooling2D, Flatten
+from tensorflow.keras.models import Model, Sequential
+from tensorflow.keras.optimizers import SGD
+# Load the training and testing data from CSV files
+train = pd.read_csv("/content/mnist_train.csv")
+train
+x_train = train.drop(['label'], axis = 1).values
+y_train = train['label'].values
+x_train.shape
+x_train = x_train.reshape((60000, 28, 28, 1)).astype('float32')/255
+test = pd.read_csv(r"/content/mnist_test.csv")
+test
+ 
+#b. Defining the model's architecture
+model = Sequential()
+model.add(Conv2D(32, (3,3), input_shape = (28, 28, 1), activation = 'relu'))
+model.add(BatchNormalization())
+model.add(Conv2D(64, (3,3),activation = 'relu'))
+model.add(MaxPooling2D((2,2)))
+model.add(Flatten())
+model.add(Dense(64, activation = 'relu'))
+model.add(Dropout(0.2))
+model.add(Dense(10, activation = 'softmax'))
+sgd = SGD(learning_rate = 0.1)
+model.compile(optimizer= sgd, loss = 'sparse_categorical_crossentropy', metrics = ['accuracy'])
+model.summary()
+  
+#c. Training the model
+r = model.fit(x_train, y_train, validation_split=0.2, epochs = 11, batch_size = 64
+x_test = test.drop(['label'], axis = 1).values
+y_test = test['label'].values
+x_test.shape
+x_test = x_test.reshape((10000, 28, 28, 1)).astype('float32')/255
+predictions = model.predict(x_test)
+predictions
+r.history.keys()
+
+#d. Estimating the model's performance
+test_loss, test_accuracy = model.evaluate(x_test, y_test)
+print(f'Test Loss: {test_loss:.4f}')
+print(f'Test Accuracy: {test_accuracy:.4f}')
+plt.plot(r.history['accuracy'], label = 'accuracy', color = 'green')
+plt.plot(r.history['val_accuracy'], label = 'val_accuracy', color = 'red')
+plt.legend()
+plt.plot(r.history['loss'], label = 'loss', color = 'red')
+plt.plot(r.history['val_loss'], label = 'val_loss', color = 'blue')
+plt.legend()
+
+
