@@ -1,4 +1,4 @@
-1 and 12
+
 
 #a. Import the necessary packages
 import pandas as pd
